@@ -1,22 +1,24 @@
-// Layout + cards
-import '../../card/card.js';
-import '../../card/card-content-meta.js';
-
 // Buttons + links + icons
 import '../../button/button-icon.js';
-import '../../link/link.js';
+import '../../button/button.js';
+
+// Layout + cards
+import '../../card/card-content-meta.js';
+import '../../card/card.js';
 
 // Modal/dialog
 import '../../dialog/dialog.js';
-import '../../button/button.js';
+
+// Link component for thumbnail/download links
+import '../../link/link.js';
 
 // Table + view switching
 import '../../table/table-wrapper.js';
-import '../../view-switcher/view-switcher.js';
 import '../../view-switcher/view-switcher-button.js';
+import '../../view-switcher/view-switcher.js';
 
-import { LitElement, css, html } from 'lit';
 import { cloneRecordings, formatRecordingDate } from './recording-shared.js';
+import { css, html, LitElement } from 'lit';
 
 class RecordingListDemo extends LitElement {
 
@@ -29,18 +31,17 @@ class RecordingListDemo extends LitElement {
 		:host {
 			display: block;
 		}
+		.download-links {
+			display: flex;
+			flex-direction: column;
+			gap: 0.5rem;
+		}
 		.recordings-card-grid {
 			display: grid;
 			gap: 0.75rem;
 			grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
 		}
 		d2l-card {
-			width: 100%;
-		}
-		.thumbnail {
-			display: block;
-			height: 145px;
-			object-fit: cover;
 			width: 100%;
 		}
 		.recording-thumbnail-link {
@@ -53,17 +54,18 @@ class RecordingListDemo extends LitElement {
 			object-fit: cover;
 			width: 70px;
 		}
-		.view-switcher {
-			margin-bottom: 0.75rem;
-		}
 		.table-actions {
 			text-align: center;
 			width: 1px;
 		}
-		.download-links {
-			display: flex;
-			flex-direction: column;
-			gap: 0.5rem;
+		.thumbnail {
+			display: block;
+			height: 145px;
+			object-fit: cover;
+			width: 100%;
+		}
+		.view-switcher {
+			margin-bottom: 0.75rem;
 		}
 	`;
 
@@ -87,6 +89,29 @@ class RecordingListDemo extends LitElement {
 		`;
 	}
 
+	_handleCardDownloadClick(e) {
+		e.preventDefault();
+		e.stopPropagation();
+		const id = Number(e.currentTarget.getAttribute('data-recording-id'));
+		this._openDownloadDialogForId(id);
+	}
+
+	_handleTableDownloadClick(e) {
+		e.preventDefault();
+		const id = Number(e.currentTarget.getAttribute('data-recording-id'));
+		this._openDownloadDialogForId(id);
+	}
+
+	_handleViewSelect(e) {
+		this._view = e.detail.key;
+	}
+
+	_openDownloadDialogForId(id) {
+		this._activeDownloadRecording = this._recordings.find(recording => recording.id === id) || null;
+		const dialog = this.shadowRoot.querySelector('#download-dialog');
+		dialog.opened = true;
+	}
+
 	_renderCards() {
 		return html`
 			<div class="recordings-card-grid">
@@ -99,9 +124,10 @@ class RecordingListDemo extends LitElement {
 							src="${recording.thumbnail}">
 						<d2l-button-icon
 							slot="actions"
+							data-recording-id="${recording.id}"
 							icon="tier1:download"
 							text="Download ${recording.title}"
-							@click=${(e) => this._openDownloadDialog(e, recording)}>
+							@click=${this._handleCardDownloadClick}>
 						</d2l-button-icon>
 						<div slot="content">
 							<div>${recording.title}</div>
@@ -155,9 +181,10 @@ class RecordingListDemo extends LitElement {
 								<td>${recording.presenter}</td>
 								<td class="table-actions">
 									<d2l-button-icon
+										data-recording-id="${recording.id}"
 										icon="tier1:download"
 										text="Download ${recording.title}"
-										@click=${(e) => this._openDownloadDialog(e, recording)}>
+										@click=${this._handleTableDownloadClick}>
 									</d2l-button-icon>
 								</td>
 							</tr>
@@ -166,18 +193,6 @@ class RecordingListDemo extends LitElement {
 				</table>
 			</d2l-table-wrapper>
 		`;
-	}
-
-	_handleViewSelect(e) {
-		this._view = e.detail.key;
-	}
-
-	_openDownloadDialog(e, recording) {
-		e.preventDefault();
-		e.stopPropagation();
-		this._activeDownloadRecording = recording;
-		const dialog = this.shadowRoot.querySelector('#download-dialog');
-		dialog.opened = true;
 	}
 
 }

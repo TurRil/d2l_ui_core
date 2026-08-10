@@ -14,7 +14,7 @@ import '../../inputs/input-textarea.js';
 // Actions
 import '../../button/button.js';
 
-import { LitElement, css, html } from 'lit';
+import { css, html, LitElement } from 'lit';
 
 class RecordingFormComponentsDemo extends LitElement {
 

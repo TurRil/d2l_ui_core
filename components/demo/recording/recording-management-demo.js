@@ -1,32 +1,34 @@
-// Layout + table
-import '../../table/table-col-sort-button.js';
-import '../../table/table-wrapper.js';
-
 // Buttons + links + icons
-import '../../button/button.js';
 import '../../button/button-icon.js';
-import '../../link/link.js';
+import '../../button/button.js';
 
-// Status + search
-import '../../inputs/input-search.js';
-import '../../status-indicator/status-indicator.js';
+// Dialogs
+import '../../dialog/dialog-confirm.js';
+import '../../dialog/dialog-fullscreen.js';
+import '../../dialog/dialog.js';
 
 // Forms
 import '../../form/form.js';
+
+// Input controls
 import '../../inputs/input-date.js';
 import '../../inputs/input-group.js';
 import '../../inputs/input-number.js';
+import '../../inputs/input-search.js';
 import '../../inputs/input-text.js';
 import '../../inputs/input-textarea.js';
 import '../../inputs/input-time.js';
 
-// Dialogs
-import '../../dialog/dialog.js';
-import '../../dialog/dialog-confirm.js';
-import '../../dialog/dialog-fullscreen.js';
+// Link + status
+import '../../link/link.js';
+import '../../status-indicator/status-indicator.js';
 
-import { LitElement, css, html, nothing } from 'lit';
+// Table
+import '../../table/table-col-sort-button.js';
+import '../../table/table-wrapper.js';
+
 import { cloneRecordings, formatRecordingDate, getStatusIndicatorState, sortComparators } from './recording-shared.js';
+import { css, html, LitElement, nothing } from 'lit';
 
 class RecordingManagementDemo extends LitElement {
 
@@ -43,26 +45,6 @@ class RecordingManagementDemo extends LitElement {
 		:host {
 			display: block;
 		}
-		.top-actions {
-			display: flex;
-			flex-wrap: wrap;
-			gap: 0.5rem;
-			justify-content: flex-end;
-			margin-bottom: 1rem;
-		}
-		.table-toolbar {
-			margin-bottom: 0.75rem;
-		}
-		.recording-thumbnail-link {
-			display: inline-block;
-		}
-		.recording-thumbnail-link img {
-			border-radius: 4px;
-			display: block;
-			height: 40px;
-			object-fit: cover;
-			width: 70px;
-		}
 		.actions {
 			white-space: nowrap;
 			width: 1px;
@@ -77,6 +59,26 @@ class RecordingManagementDemo extends LitElement {
 			display: flex;
 			flex-direction: column;
 			gap: 0.5rem;
+		}
+		.recording-thumbnail-link {
+			display: inline-block;
+		}
+		.recording-thumbnail-link img {
+			border-radius: 4px;
+			display: block;
+			height: 40px;
+			object-fit: cover;
+			width: 70px;
+		}
+		.table-toolbar {
+			margin-bottom: 0.75rem;
+		}
+		.top-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.5rem;
+			justify-content: flex-end;
+			margin-bottom: 1rem;
 		}
 	`;
 
@@ -94,12 +96,12 @@ class RecordingManagementDemo extends LitElement {
 
 	render() {
 		return html`
-			<!-- Top-right actions match existing button patterns and open existing dialogs. -->
+			<!-- Top-right actions follow existing button and dialog patterns. -->
 			<div class="top-actions">
 				<d2l-button primary @click=${this._openRecordUrl}>Record</d2l-button>
-				<d2l-button @click=${() => this._openDialog('#schedule-dialog')}>Schedule</d2l-button>
-				<d2l-button @click=${() => this._openDialog('#timetable-dialog')}>Timetable</d2l-button>
-				<d2l-button @click=${() => this._openDialog('#details-dialog')}>Details</d2l-button>
+				<d2l-button @click=${this._openScheduleDialog}>Schedule</d2l-button>
+				<d2l-button @click=${this._openTimetableDialog}>Timetable</d2l-button>
+				<d2l-button @click=${this._openDetailsDialog}>Details</d2l-button>
 			</div>
 
 			<div class="table-toolbar">
@@ -116,10 +118,10 @@ class RecordingManagementDemo extends LitElement {
 					<thead>
 						<tr>
 							<th scope="col">Thumbnail</th>
-							<th scope="col">${this._renderSortButton('title', 'Title')}</th>
-							<th scope="col">${this._renderSortButton('date', 'Date')}</th>
-							<th scope="col">${this._renderSortButton('presenter', 'Presenter')}</th>
-							<th scope="col">${this._renderSortButton('status', 'Status')}</th>
+							<th scope="col"><d2l-table-col-sort-button @click=${this._sortByTitle} ?desc=${this._sortDesc} ?nosort=${this._sortField !== 'title'}>Title</d2l-table-col-sort-button></th>
+							<th scope="col"><d2l-table-col-sort-button @click=${this._sortByDate} ?desc=${this._sortDesc} ?nosort=${this._sortField !== 'date'}>Date</d2l-table-col-sort-button></th>
+							<th scope="col"><d2l-table-col-sort-button @click=${this._sortByPresenter} ?desc=${this._sortDesc} ?nosort=${this._sortField !== 'presenter'}>Presenter</d2l-table-col-sort-button></th>
+							<th scope="col"><d2l-table-col-sort-button @click=${this._sortByStatus} ?desc=${this._sortDesc} ?nosort=${this._sortField !== 'status'}>Status</d2l-table-col-sort-button></th>
 							<th class="actions" scope="col">Actions</th>
 						</tr>
 					</thead>
@@ -141,9 +143,9 @@ class RecordingManagementDemo extends LitElement {
 									</d2l-status-indicator>
 								</td>
 								<td class="actions">
-									<d2l-button-icon icon="tier1:edit" text="Edit ${recording.title}" @click=${() => this._openEdit(recording)}></d2l-button-icon>
-									<d2l-button-icon icon="tier1:delete" text="Delete ${recording.title}" @click=${() => this._openDelete(recording)}></d2l-button-icon>
-									<d2l-button-icon icon="tier1:download" text="Download ${recording.title}" @click=${() => this._openDownload(recording)}></d2l-button-icon>
+									<d2l-button-icon data-recording-id="${recording.id}" icon="tier1:edit" text="Edit ${recording.title}" @click=${this._onEditActionClick}></d2l-button-icon>
+									<d2l-button-icon data-recording-id="${recording.id}" icon="tier1:delete" text="Delete ${recording.title}" @click=${this._onDeleteActionClick}></d2l-button-icon>
+									<d2l-button-icon data-recording-id="${recording.id}" icon="tier1:download" text="Download ${recording.title}" @click=${this._onDownloadActionClick}></d2l-button-icon>
 								</td>
 							</tr>
 						`)}
@@ -159,9 +161,85 @@ class RecordingManagementDemo extends LitElement {
 		`;
 	}
 
+	_getRecordingById(id) {
+		return this._allRecordings.find(recording => recording.id === id) || null;
+	}
+
+	_handleDeleteDialogClose(e) {
+		if (e.detail.action !== 'delete' || !this._editingRecording) return;
+		this._allRecordings = this._allRecordings.filter(recording => recording.id !== this._editingRecording.id);
+		this._editingRecording = null;
+		this._rebuildVisibleRecordings();
+	}
+
+	_handleSearch(e) {
+		this._searchValue = e.detail.value.trim();
+		this._rebuildVisibleRecordings();
+	}
+
+	_onDeleteActionClick(e) {
+		const id = Number(e.currentTarget.getAttribute('data-recording-id'));
+		this._editingRecording = this._getRecordingById(id);
+		this._openDialog('#delete-dialog');
+	}
+
+	_onDownloadActionClick(e) {
+		const id = Number(e.currentTarget.getAttribute('data-recording-id'));
+		this._activeDownloadRecording = this._getRecordingById(id);
+		this._openDialog('#download-dialog');
+	}
+
+	_onEditActionClick(e) {
+		const id = Number(e.currentTarget.getAttribute('data-recording-id'));
+		this._editingRecording = this._getRecordingById(id);
+		this._openDialog('#details-dialog');
+	}
+
+	_openDetailsDialog() {
+		this._editingRecording = null;
+		this._openDialog('#details-dialog');
+	}
+
+	_openDialog(selector) {
+		const dialog = this.shadowRoot.querySelector(selector);
+		dialog.opened = true;
+	}
+
+	_openRecordUrl() {
+		window.open('/recordings/start', '_blank', 'noopener,noreferrer');
+	}
+
+	_openScheduleDialog() {
+		this._openDialog('#schedule-dialog');
+	}
+
+	_openTimetableDialog() {
+		this._openDialog('#timetable-dialog');
+	}
+
+	_rebuildVisibleRecordings() {
+		const searchValue = this._searchValue.toLowerCase();
+		const filtered = this._allRecordings.filter(recording => {
+			if (!searchValue) return true;
+			return [recording.title, recording.presenter, recording.status]
+				.some(value => value.toLowerCase().includes(searchValue));
+		});
+
+		const comparator = sortComparators[this._sortField];
+		if (comparator) {
+			filtered.sort((a, b) => (this._sortDesc ? comparator(b, a) : comparator(a, b)));
+		}
+
+		this._visibleRecordings = filtered;
+	}
+
 	_renderDeleteConfirmDialog() {
 		return html`
-			<d2l-dialog-confirm id="delete-dialog" title-text="Delete recording" text="${this._editingRecording ? `Are you sure you want to delete \"${this._editingRecording.title}\"?` : 'Are you sure?'}" @d2l-dialog-close=${this._handleDeleteDialogClose}>
+			<d2l-dialog-confirm
+				id="delete-dialog"
+				title-text="Delete recording"
+				text="${this._editingRecording ? `Are you sure you want to delete "${this._editingRecording.title}"?` : 'Are you sure?'}"
+				@d2l-dialog-close=${this._handleDeleteDialogClose}>
 				<d2l-button slot="footer" primary data-dialog-action="delete">Delete</d2l-button>
 				<d2l-button slot="footer" data-dialog-action="cancel">Cancel</d2l-button>
 			</d2l-dialog-confirm>
@@ -169,10 +247,10 @@ class RecordingManagementDemo extends LitElement {
 	}
 
 	_renderDetailsDialog() {
-		const titleValue = this._editingRecording ? this._editingRecording.title : '';
 		const presenterValue = this._editingRecording ? this._editingRecording.presenter : '';
+		const titleValue = this._editingRecording ? this._editingRecording.title : '';
 		return html`
-			<!-- Details uses fullscreen dialog to follow full-page-editing interaction patterns. -->
+			<!-- Details uses fullscreen dialog to follow full-page editing patterns. -->
 			<d2l-dialog-fullscreen id="details-dialog" title-text="Recording Details">
 				<d2l-form class="dialog-form">
 					<d2l-input-group>
@@ -221,15 +299,6 @@ class RecordingManagementDemo extends LitElement {
 		`;
 	}
 
-	_renderSortButton(field, text) {
-		return html`
-			<d2l-table-col-sort-button
-				@click=${() => this._toggleSort(field)}
-				?desc=${this._sortDesc}
-				?nosort=${this._sortField !== field}>${text}</d2l-table-col-sort-button>
-		`;
-	}
-
 	_renderTimetableDialog() {
 		return html`
 			<d2l-dialog-fullscreen id="timetable-dialog" title-text="Timetable">
@@ -248,56 +317,20 @@ class RecordingManagementDemo extends LitElement {
 		`;
 	}
 
-	_handleDeleteDialogClose(e) {
-		if (e.detail.action !== 'delete' || !this._editingRecording) return;
-		this._allRecordings = this._allRecordings.filter(recording => recording.id !== this._editingRecording.id);
-		this._editingRecording = null;
-		this._rebuildVisibleRecordings();
+	_sortByDate() {
+		this._toggleSort('date');
 	}
 
-	_handleSearch(e) {
-		this._searchValue = e.detail.value.trim();
-		this._rebuildVisibleRecordings();
+	_sortByPresenter() {
+		this._toggleSort('presenter');
 	}
 
-	_openDelete(recording) {
-		this._editingRecording = recording;
-		this._openDialog('#delete-dialog');
+	_sortByStatus() {
+		this._toggleSort('status');
 	}
 
-	_openDialog(selector) {
-		const dialog = this.shadowRoot.querySelector(selector);
-		dialog.opened = true;
-	}
-
-	_openDownload(recording) {
-		this._activeDownloadRecording = recording;
-		this._openDialog('#download-dialog');
-	}
-
-	_openEdit(recording) {
-		this._editingRecording = recording;
-		this._openDialog('#details-dialog');
-	}
-
-	_openRecordUrl() {
-		window.open('/recordings/start', '_blank', 'noopener,noreferrer');
-	}
-
-	_rebuildVisibleRecordings() {
-		const searchValue = this._searchValue.toLowerCase();
-		const filtered = this._allRecordings.filter(recording => {
-			if (!searchValue) return true;
-			return [recording.title, recording.presenter, recording.status]
-				.some(value => value.toLowerCase().includes(searchValue));
-		});
-
-		const comparator = sortComparators[this._sortField];
-		if (comparator) {
-			filtered.sort((a, b) => this._sortDesc ? comparator(b, a) : comparator(a, b));
-		}
-
-		this._visibleRecordings = filtered;
+	_sortByTitle() {
+		this._toggleSort('title');
 	}
 
 	_toggleSort(field) {
