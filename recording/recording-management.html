@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta charset="UTF-8">
+		<link rel="stylesheet" href="../components/demo/styles.css" type="text/css">
+		<script async src="https://cdn.jsdelivr.net/npm/es-module-shims@1/dist/es-module-shims.js"></script>
+		<script type="importmap">
+			{
+				"imports": {
+					"lit": "https://cdn.jsdelivr.net/npm/lit@3/index.js",
+					"lit/": "https://cdn.jsdelivr.net/npm/lit@3/",
+					"@brightspace-ui/intl": "https://cdn.jsdelivr.net/npm/@brightspace-ui/intl@3/lib/common.js",
+					"@brightspace-ui/intl/": "https://cdn.jsdelivr.net/npm/@brightspace-ui/intl@3/",
+					"@brightspace-ui/lms-context-provider/": "https://cdn.jsdelivr.net/npm/@brightspace-ui/lms-context-provider@1/",
+					"@open-wc/dedupe-mixin": "https://cdn.jsdelivr.net/npm/@open-wc/dedupe-mixin@2/index.js",
+					"@open-wc/dedupe-mixin/": "https://cdn.jsdelivr.net/npm/@open-wc/dedupe-mixin@2/",
+					"ifrau/": "https://cdn.jsdelivr.net/npm/ifrau@0.42/"
+				}
+			}
+		</script>
+		<script type="module">
+			import '../components/demo/demo-page.js';
+			import './recording-management-demo.js';
+		</script>
+	</head>
+	<body unresolved>
+		<d2l-demo-page page-title="Recording Management">
+			<d2l-recording-management-demo></d2l-recording-management-demo>
+		</d2l-demo-page>
+	</body>
+</html>
