@@ -7,6 +7,25 @@ This folder contains:
 
 Use the steps below to export/copy/distribute these files to another folder and verify they still work correctly.
 
+## Quick copy (CI)
+
+Use a single command to copy everything from `recording/` into a distribution folder while preserving structure:
+
+```bash
+mkdir -p "$DEST_DIR" && rsync -a --delete ./recording/ "$DEST_DIR"/
+```
+
+Example:
+
+```bash
+DEST_DIR=./dist/recording-bundle
+mkdir -p "$DEST_DIR" && rsync -a --delete ./recording/ "$DEST_DIR"/
+```
+
+Notes:
+- `--delete` keeps destination in sync by removing files no longer present in source.
+- Ensure `DEST_DIR` is not empty and is not `/` before running in CI.
+
 ## 1) Choose a destination folder
 
 Pick or create a destination folder where you want to distribute the assets, for example:
